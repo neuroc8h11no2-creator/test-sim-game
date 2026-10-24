@@ -4,12 +4,12 @@ const $ = s => document.querySelector(s);
 const rand = (a,b) => a + Math.random()*(b-a);
 const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
 let width=800,height=600,cells=[],food=[],elapsed=0,speed=1,paused=false,history=[],sample=0;
-let nextId=1,selected=null;
+let nextId=1,selected=null,placingFood=false;
 const MAX_CELLS=350, MAX_FOOD=650;
 function resize(){const r=canvas.getBoundingClientRect();const oldW=width,oldH=height;width=r.width;height=r.height;canvas.width=width*devicePixelRatio;canvas.height=height*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);for(const item of [...cells,...food]){item.x=item.x/oldW*width;item.y=item.y/oldH*height;}}
 function microbe(parent){const gene=key=>parent?clamp(parent[key]*rand(.92,1.08),key==='size'?3:0.5,key==='size'?9:2):rand(.8,1.3);const size=parent?gene('size'):rand(4,7);return {id:nextId++,parentId:parent?.id??null,lineage:parent?[...parent.lineage,parent.id]:[],parentTraits:parent?{size:parent.size,speed:parent.speed,efficiency:parent.efficiency}:null,founderTraits:parent?(parent.founderTraits??{size:parent.size,speed:parent.speed,efficiency:parent.efficiency}):null,x:parent?clamp(parent.x+rand(-12,12),size,width-size):rand(20,width-20),y:parent?clamp(parent.y+rand(-12,12),size,height-size):rand(20,height-20),size,speed:gene('speed'),efficiency:gene('efficiency'),angle:rand(0,Math.PI*2),energy:parent?55:rand(50,95),age:0,generation:parent?parent.generation+1:1,hue:parent?(parent.hue+rand(-8,8)+360)%360:[rand(90,150),rand(160,195),rand(260,300)][Math.floor(rand(0,3))],phase:rand(0,10)};}
 function addFood(n,x,y){for(let i=0;i<n&&food.length<MAX_FOOD;i++)food.push({x:x===undefined?rand(10,width-10):clamp(x+rand(-45,45),5,width-5),y:y===undefined?rand(10,height-10):clamp(y+rand(-45,45),5,height-5),r:rand(1.1,2.3)});}
-function reset(){selected=null;nextId=1;cells=[];food=[];elapsed=0;sample=0;history=[];for(let i=0;i<42;i++)cells.push(microbe());addFood(210);stats();}
+function reset(){setPlacement(false);selected=null;nextId=1;cells=[];food=[];elapsed=0;sample=0;history=[];for(let i=0;i<42;i++)cells.push(microbe());addFood(210);stats();}
 function step(dt){elapsed+=dt;const supply=Number($('#food').value);if(Math.random()<dt*(supply/5))addFood(1);const babies=[];
  for(const c of cells){c.age+=dt;c.phase+=dt*4;c.energy-=dt*(.75+c.speed*c.speed*.48+c.size*.045)/c.efficiency;let target=null,best=135*135;for(const f of food){const d=(f.x-c.x)**2+(f.y-c.y)**2;if(d<best){best=d;target=f;}}if(target){const aim=Math.atan2(target.y-c.y,target.x-c.x);let diff=Math.atan2(Math.sin(aim-c.angle),Math.cos(aim-c.angle));c.angle+=clamp(diff,-dt*3,dt*3);if(best<(c.size+5)**2){food.splice(food.indexOf(target),1);c.energy=Math.min(155,c.energy+23);}}else c.angle+=rand(-2,2)*dt;
  c.x+=Math.cos(c.angle)*c.speed*18*dt;c.y+=Math.sin(c.angle)*c.speed*18*dt;if(c.x<c.size||c.x>width-c.size){c.angle=Math.PI-c.angle;c.x=clamp(c.x,c.size,width-c.size);}if(c.y<c.size||c.y>height-c.size){c.angle=-c.angle;c.y=clamp(c.y,c.size,height-c.size);}if(c.energy>115&&c.age>7&&cells.length+babies.length<MAX_CELLS){c.energy=55;babies.push(microbe(c));}}
@@ -22,8 +22,11 @@ $('#pause').onclick=()=>{paused=!paused;$('#pause').textContent=paused?'▶':'�
 for(const b of document.querySelectorAll('[data-speed]'))b.onclick=()=>{speed=Number(b.dataset.speed);document.querySelector('.speeds .active').classList.remove('active');b.classList.add('active');};
 $('#food').oninput=()=>{$('#food-value').textContent=Number($('#food').value)<25?'Scarce':Number($('#food').value)>70?'Abundant':'Balanced';};
 $('#feed').onclick=()=>{addFood(70);stats();};$('#add').onclick=$('#reseed').onclick=()=>{for(let i=0;i<12&&cells.length<MAX_CELLS;i++)cells.push(microbe());stats();};$('#reset').onclick=reset;
+function setPlacement(enabled){placingFood=enabled;$('#place-food').setAttribute('aria-pressed',String(enabled));$('#place-food').textContent=enabled?'✓ Placing nutrients · Done':'✦ Place nutrients';$('.hint').textContent=enabled?'✦ Click the dish to place nutrients · Turn off when finished':'Click a microbe to inspect its traits';canvas.style.cursor=enabled?'crosshair':'pointer';}
+$('#place-food').onclick=()=>setPlacement(!placingFood);
+window.addEventListener('keydown',e=>{if(e.key==='Escape')setPlacement(false);});
 function selectAt(x,y){let nearest=null,best=Infinity;for(const c of cells){const d=Math.hypot(c.x-x,c.y-y);if(d<=Math.max(14,c.size*1.6)&&d<best){nearest=c;best=d;}}if(nearest){selected=nearest;inspect();return true;}return false;}
-canvas.onclick=e=>{const r=canvas.getBoundingClientRect();const x=(e.clientX-r.left)*width/r.width,y=(e.clientY-r.top)*height/r.height;if(!selectAt(x,y))addFood(25,x,y);stats();};
+canvas.onclick=e=>{const r=canvas.getBoundingClientRect();const x=(e.clientX-r.left)*width/r.width,y=(e.clientY-r.top)*height/r.height;if(placingFood)addFood(25,x,y);else selectAt(x,y);stats();};
 function descendant(){return selected?cells.find(c=>c.lineage.includes(selected.id)):null;}
 function inspect(){
  $('#inspect-prompt').hidden=!!selected;$('#inspect-details').hidden=!selected;if(!selected)return;
