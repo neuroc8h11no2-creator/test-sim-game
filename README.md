@@ -17,6 +17,6 @@ Open the served page in a browser. Click a microbe to inspect its energy, age, g
 
 - `index.html`: interface
 - `style.css`: responsive styling
-- `app.js`: canvas rendering and simulation
+- `simulation.js`: canvas rendering and simulation
 
 No credentials, external services, or database are required.

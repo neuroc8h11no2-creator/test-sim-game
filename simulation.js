@@ -22,7 +22,8 @@ $('#pause').onclick=()=>{paused=!paused;$('#pause').textContent=paused?'▶':'�
 for(const b of document.querySelectorAll('[data-speed]'))b.onclick=()=>{speed=Number(b.dataset.speed);document.querySelector('.speeds .active').classList.remove('active');b.classList.add('active');};
 $('#food').oninput=()=>{$('#food-value').textContent=Number($('#food').value)<25?'Scarce':Number($('#food').value)>70?'Abundant':'Balanced';};
 $('#feed').onclick=()=>{addFood(70);stats();};$('#add').onclick=$('#reseed').onclick=()=>{for(let i=0;i<12&&cells.length<MAX_CELLS;i++)cells.push(microbe());stats();};$('#reset').onclick=reset;
-function setPlacement(enabled){placingFood=enabled;$('#place-food').setAttribute('aria-pressed',String(enabled));$('#place-food').textContent=enabled?'✓ Placing nutrients · Done':'✦ Place nutrients';$('.hint').textContent=enabled?'✦ Click the dish to place nutrients · Turn off when finished':'Click a microbe to inspect its traits';canvas.style.cursor=enabled?'crosshair':'pointer';}
+function setPlacement(enabled){placingFood=enabled;$('#inspect-mode').setAttribute('aria-pressed',String(!enabled));$('#place-food').setAttribute('aria-pressed',String(enabled));$('#place-food').textContent=enabled?'✓ Placing nutrients · Done':'✦ Place nutrients';$('.hint').textContent=enabled?'✦ Click the dish to place nutrients · Turn off when finished':'Click a microbe to inspect its traits';canvas.style.cursor=enabled?'crosshair':'pointer';}
+$('#inspect-mode').onclick=()=>setPlacement(false);
 $('#place-food').onclick=()=>setPlacement(!placingFood);
 window.addEventListener('keydown',e=>{if(e.key==='Escape')setPlacement(false);});
 function selectAt(x,y){let nearest=null,best=Infinity;for(const c of cells){const d=Math.hypot(c.x-x,c.y-y);if(d<=Math.max(14,c.size*1.6)&&d<best){nearest=c;best=d;}}if(nearest){selected=nearest;inspect();return true;}return false;}
