@@ -11,7 +11,7 @@ cd /workspace/test-sim-game
 python3 -m http.server 8000 --bind 0.0.0.0
 ```
 
-Open the served page in a browser. Click the dish to add nutrients. Use the controls to pause, accelerate time, adjust food supply, introduce cells, or reset. Population is capped at 350 and food at 650 to keep the simulation responsive. Fonts fall back to system fonts if Google Fonts is unavailable.
+Open the served page in a browser. Click a microbe to inspect its energy, age, generation, and inherited size, speed, and efficiency. Trait changes are shown relative to its parent and founding ancestor; use Follow a living descendant to explore its lineage. Click empty water to add nutrients. Use the controls to pause, accelerate time, adjust food supply, introduce cells, or reset. Population is capped at 350 and food at 650 to keep the simulation responsive. Fonts fall back to system fonts if Google Fonts is unavailable.
 
 ## Files
 
