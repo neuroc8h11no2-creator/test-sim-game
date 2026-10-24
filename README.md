@@ -1,0 +1,22 @@
+# Petri
+
+A small browser-based microbial ecosystem. Cells forage, consume energy, divide, inherit mutations, and die. Speed, size, and efficiency influence survival. This is an exploratory toy model, not a scientific simulator.
+
+## Run
+
+Requires Python 3; no packages or build step are needed.
+
+```sh
+cd /workspace/test-sim-game
+python3 -m http.server 8000 --bind 0.0.0.0
+```
+
+Open the served page in a browser. Click the dish to add nutrients. Use the controls to pause, accelerate time, adjust food supply, introduce cells, or reset. Population is capped at 350 and food at 650 to keep the simulation responsive. Fonts fall back to system fonts if Google Fonts is unavailable.
+
+## Files
+
+- `index.html`: interface
+- `style.css`: responsive styling
+- `app.js`: canvas rendering and simulation
+
+No credentials, external services, or database are required.
